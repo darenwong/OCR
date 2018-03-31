@@ -47,4 +47,81 @@ def initialize_parameters(n_x, n_h, n_y):
       parameters["b" + str(i+1)] = np.zeros((n[i+1],1))
     return parameters
   
-  
+def compute_cost(A2, Y, parameters):
+    """
+    Computes the cross-entropy cost given in equation (13)
+    
+    Arguments:
+    A2 -- The sigmoid output of the second activation, of shape (1, number of examples)
+    Y -- "true" labels vector of shape (1, number of examples)
+    parameters -- python dictionary containing your parameters W1, b1, W2 and b2
+    
+    Returns:
+    cost -- cross-entropy cost given equation (13)
+    """
+    
+    m = Y.shape[1] # number of example
+
+    # Compute the cross-entropy cost
+    ### START CODE HERE ### (≈ 2 lines of code)
+    logprobs = np.multiply(np.log(A2),Y) + np.multiply(np.log(1-A2),(1-Y))
+    cost = - np.sum(logprobs)  
+    ### END CODE HERE ###
+    
+    cost = np.squeeze(cost)/m     # makes sure cost is the dimension we expect. 
+                                # E.g., turns [[17]] into 17 
+    assert(isinstance(cost, float))
+    
+    return cost
+
+def backward_propagation(parameters, cache, X, Y):
+    """
+    Implement the backward propagation using the instructions above.
+    
+    Arguments:
+    parameters -- python dictionary containing our parameters 
+    cache -- a dictionary containing "Z1", "A1", "Z2" and "A2".
+    X -- input data of shape (2, number of examples)
+    Y -- "true" labels vector of shape (1, number of examples)
+    
+    Returns:
+    grads -- python dictionary containing your gradients with respect to different parameters
+    """
+    m = X.shape[1]
+    
+    grads={}
+    lp= len(parameters)//2 + 1
+    # Backward propagation: calculate dW1, db1, dW2, db2. 
+   
+    for i in reversed(range(int(lp))):
+        if i == lp-1:
+            A_previous = cache["A" + str(i-1)]
+            A_final = cache["A" + str(i)]
+            dZ_final = A_final - Y
+            grads["dZ" + str(i)] = dZ_final 
+            grads["dW" + str(i)] = np.matmul(dZ_final, A_previous.transpose())/m
+            grads["db" + str(i)] = np.sum(dZ_final, axis=1, keepdims=True)/m
+        elif i > 1:
+            W_next = parameters["W" + str(i+1)]
+            dZ_next = grads["dZ" + str(i+1)]
+            A_next = cache["A" + str(i+1)]
+            A = cache["A" + str(i)]
+            A_previous = cache["A" + str(i-1)]
+            dZ = np.multiply(np.matmul(W_next.transpose(), dZ_next), (1 - np.power(A, 2)))
+            grads["dZ" + str(i)] = dZ
+            grads["dW" + str(i)] = np.matmul(dZ, A_previous.transpose())/m
+            grads["db" + str(i)] = np.sum(dZ, axis=1, keepdims=True)/m
+        elif i == 1:
+            W_next = parameters["W" + str(i+1)]
+            dZ_next = grads["dZ" + str(i+1)]
+            A_next = cache["A" + str(i+1)]
+            A = cache["A" + str(i)]
+            dZ = np.multiply(np.matmul(W_next.transpose(), dZ_next), (1 - np.power(A, 2)))
+            grads["dZ" + str(i)] = dZ
+            grads["dW" + str(i)] = np.matmul(dZ, X.transpose())/m
+            grads["db" + str(i)] = np.sum(dZ, axis=1, keepdims=True)/m
+        else:
+            break
+            
+    
+    return grads
