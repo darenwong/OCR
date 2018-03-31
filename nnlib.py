@@ -70,12 +70,18 @@ def forward_propagation(X, parameters):
 
     return A_fin, cache
   
+
+
+
 def compute_cost(A_fin, Y, parameters):
+
     """
     Computes the cross-entropy cost given in equation (13)
     
     Arguments:
+
     A_fin -- The sigmoid output of the second activation, of shape (1, number of examples)
+
     Y -- "true" labels vector of shape (1, number of examples)
     parameters -- python dictionary containing your parameters W1, b1, W2 and b2
     
@@ -84,6 +90,8 @@ def compute_cost(A_fin, Y, parameters):
     """
     
     m = Y.shape[1] # number of example
+
+ 
     
     # Compute the cross-entropy cost
     ### START CODE HERE ### (≈ 2 lines of code)
@@ -92,11 +100,66 @@ def compute_cost(A_fin, Y, parameters):
     ### END CODE HERE ###
     
     cost = np.squeeze(cost)     # makes sure cost is the dimension we expect. 
+
                                 # E.g., turns [[17]] into 17 
     assert(isinstance(cost, float))
     
     return cost
 
+
+def backward_propagation(parameters, cache, X, Y):
+    """
+    Implement the backward propagation using the instructions above.
+    
+    Arguments:
+    parameters -- python dictionary containing our parameters 
+    cache -- a dictionary containing "Z1", "A1", "Z2" and "A2".
+    X -- input data of shape (2, number of examples)
+    Y -- "true" labels vector of shape (1, number of examples)
+    
+    Returns:
+    grads -- python dictionary containing your gradients with respect to different parameters
+    """
+    m = X.shape[1]
+    
+    grads={}
+    lp= len(parameters)//2 + 1
+    # Backward propagation: calculate dW1, db1, dW2, db2. 
+   
+    for i in reversed(range(int(lp))):
+        if i == lp-1:
+            A_previous = cache["A" + str(i-1)]
+            A_final = cache["A" + str(i)]
+            dZ_final = A_final - Y
+            grads["dZ" + str(i)] = dZ_final 
+            grads["dW" + str(i)] = np.matmul(dZ_final, A_previous.transpose())/m
+            grads["db" + str(i)] = np.sum(dZ_final, axis=1, keepdims=True)/m
+        elif i > 1:
+            W_next = parameters["W" + str(i+1)]
+            dZ_next = grads["dZ" + str(i+1)]
+            A_next = cache["A" + str(i+1)]
+            A = cache["A" + str(i)]
+            A_previous = cache["A" + str(i-1)]
+            dZ = np.multiply(np.matmul(W_next.transpose(), dZ_next), (1 - np.power(A, 2)))
+            grads["dZ" + str(i)] = dZ
+            grads["dW" + str(i)] = np.matmul(dZ, A_previous.transpose())/m
+            grads["db" + str(i)] = np.sum(dZ, axis=1, keepdims=True)/m
+        elif i == 1:
+            W_next = parameters["W" + str(i+1)]
+            dZ_next = grads["dZ" + str(i+1)]
+            A_next = cache["A" + str(i+1)]
+            A = cache["A" + str(i)]
+            dZ = np.multiply(np.matmul(W_next.transpose(), dZ_next), (1 - np.power(A, 2)))
+            grads["dZ" + str(i)] = dZ
+            grads["dW" + str(i)] = np.matmul(dZ, X.transpose())/m
+            grads["db" + str(i)] = np.sum(dZ, axis=1, keepdims=True)/m
+        else:
+            break
+            
+    
+    return grads
+
+  
 def update_parameters(parameters, grads, learning_rate = 1.2):
     """
     Updates parameters using the gradient descent update rule
@@ -179,3 +242,4 @@ def predict(parameters, X, threshold = 0.5):
     predictions = (A_fin > threshold)
     
     return predictions
+
