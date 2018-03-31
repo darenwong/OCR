@@ -1,14 +1,29 @@
 # Neural network
 import numpy as np
 from nnlib import *
+import scipy.io
 
 # Data Preprocessing
-X_train = np.array([[1,2,3,4],
-              [2,3,4,5],
-              [3,4,5,6],
-              [4,5,6,7],
-              [5,6,7,8]])
-Y_train = np.array([1, 1, 0, 0, 0]).reshape((5,1))
+train_percent = 0.7
+
+file = scipy.io.loadmat('ex4data1.mat')
+raw_X = file['X'].T
+raw_Y = file['y']
+
+train_len = int(raw_X.shape[1]*train_percent)
+train_X = raw_X[:,:train_len]
+train_Y = raw_Y[:train_len]
+
+test_X = raw_X[:,train_len:]
+test_Y = raw_Y[train_len:]
+
+#X_train = np.array([[1,2,3,4],
+#              [2,3,4,5],
+#              [3,4,5,6],
+#              [4,5,6,7],
+#              [5,6,7,8]])
+#Y_train = np.array([1, 1, 0, 0, 0]).reshape((5,1))
+
 
 # Initial variables for Neural Network
 hid_layers = [10, 5, 3]
