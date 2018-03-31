@@ -88,16 +88,21 @@ def compute_cost(A_fin, Y, parameters):
     Returns:
     cost -- cross-entropy cost given equation (13)
     """
-    
+    lam = 0
     m = Y.shape[1] # number of example
-
- 
+    num_layers= len(parameters)//2 + 1
     
     # Compute the cross-entropy cost
     ### START CODE HERE ### (≈ 2 lines of code)
     logprobs = np.multiply(np.log(A_fin),Y) + np.multiply(np.log(1 - A_fin),1 - Y)
     cost = -np.sum(logprobs)/m
+    regcost = 0
+    for i in range(num_layers-1):
+        regcost += np.sum(parameters["W"+str(i+1)]**2) + np.sum(parameters["b"+str(i+1)]**2)
+    regcost = lam/(2*m)*regcost
     ### END CODE HERE ###
+    
+    cost += regcost
     
     cost = np.squeeze(cost)     # makes sure cost is the dimension we expect. 
 
@@ -160,7 +165,7 @@ def backward_propagation(parameters, cache, X, Y):
     return grads
 
   
-def update_parameters(parameters, grads, learning_rate = 1.2):
+def update_parameters(parameters, grads, learning_rate):
     """
     Updates parameters using the gradient descent update rule
     
@@ -171,19 +176,21 @@ def update_parameters(parameters, grads, learning_rate = 1.2):
     Returns:
     parameters -- python dictionary containing your updated parameters 
     """
+    
+    lam = 0
     # Calculate number of layers in NN
     num_layers= len(parameters)//2 + 1
     
     # Update W and b for each layer using gradients calculated
     for i in range(num_layers - 1):
         parameters["W" + str(i+1)] = parameters["W" + str(i+1)] \
-        - learning_rate*grads["dW"+str(i+1)]
+        - learning_rate*(grads["dW"+str(i+1)] + lam*parameters["W" + str(i+1)])
         parameters["b" + str(i+1)] = parameters["b" + str(i+1)] \
         - learning_rate*grads["db"+str(i+1)]
     
     return parameters
 
-def nn_model(X, Y, n_h, num_iterations = 10000, print_cost=False):
+def nn_model(X, Y, n_h, num_iterations = 10000, learning_rate = 1.2, print_cost=False):
     """
     Arguments:
     X -- dataset of shape (2, number of examples)
@@ -215,7 +222,7 @@ def nn_model(X, Y, n_h, num_iterations = 10000, print_cost=False):
         grads = backward_propagation(parameters, cache, X, Y)
  
         # Gradient descent parameter update. Inputs: "parameters, grads". Outputs: "parameters".
-        parameters = update_parameters(parameters, grads)
+        parameters = update_parameters(parameters, grads, learning_rate)
         
         ### END CODE HERE ###
         
@@ -225,7 +232,7 @@ def nn_model(X, Y, n_h, num_iterations = 10000, print_cost=False):
 
     return parameters
 
-def predict(parameters, X, threshold = 0.5):
+def predict(parameters, X):
     """
     Using the learned parameters, predicts a class for each example in X
     
@@ -239,7 +246,7 @@ def predict(parameters, X, threshold = 0.5):
     
     # Computes probabilities using forward propagation, and classifies to 0/1 using the threshold given.
     A_fin, cache = forward_propagation(X, parameters)
-    predictions = (A_fin > threshold)
+    predictions = np.argmax(A_fin,0)
     
     return predictions
 
