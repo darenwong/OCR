@@ -1,5 +1,5 @@
 # Unroll image data into numpy array
-import Image
+from PIL import Image
 import numpy as np
 
 def image2pixelarray(filepath):
@@ -18,9 +18,29 @@ def image2pixelarray(filepath):
         im[y][x]
     """
     im = Image.open(filepath).convert('L')
+    im = im.resize((20,20), Image.ANTIALIAS)
     (width, height) = im.size
     greyscale_map = list(im.getdata())
-    greyscale_map = np.array(greyscale_map)
+    greyscale_map = np.array(greyscale_map)/np.amax(greyscale_map)
+    greyscale_map = np.array([greyscale_map]).T
     return (width, height), greyscale_map
 
-image2pixelarray()
+
+def image_display(filepath):
+    """
+    Parameters
+    ----------
+    filepath : str
+        Path to an image file
+
+    Returns
+    -------
+    plot
+        Resize image and plot the image
+    """
+    (width, height), greyscale_map = image2pixelarray(filepath)
+    img = greyscale_map.reshape(width,height)
+    plt.imshow(img, cmap='gray')
+    plt.colorbar()
+    return plt.show()
+

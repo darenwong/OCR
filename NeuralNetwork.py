@@ -2,6 +2,8 @@
 import numpy as np
 from nnlib import *
 import scipy.io
+import Predictor
+import ProcessImages
 
 # Data Preprocessing
 train_percent = 0.7
@@ -35,7 +37,7 @@ X_test = new_X[:,train_len:]
 Y_test = new_Y[train_len:].T
 
 # Initial variables for Neural Network
-hid_layers = 25
+hid_layers = [25]
 num_iter = 10000
 learn_rate = 1.2
 

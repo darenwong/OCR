@@ -88,7 +88,7 @@ def compute_cost(A_fin, Y, parameters):
     Returns:
     cost -- cross-entropy cost given equation (13)
     """
-    lam = 0
+    #lam = 0
     m = Y.shape[1] # number of example
     num_layers= len(parameters)//2 + 1
     
@@ -96,13 +96,13 @@ def compute_cost(A_fin, Y, parameters):
     ### START CODE HERE ### (≈ 2 lines of code)
     logprobs = np.multiply(np.log(A_fin),Y) + np.multiply(np.log(1 - A_fin),1 - Y)
     cost = -np.sum(logprobs)/m
-    regcost = 0
-    for i in range(num_layers-1):
-        regcost += np.sum(parameters["W"+str(i+1)]**2) + np.sum(parameters["b"+str(i+1)]**2)
-    regcost = lam/(2*m)*regcost
+#    regcost = 0
+#    for i in range(num_layers-1):
+#        regcost += np.sum(parameters["W"+str(i+1)]**2) + np.sum(parameters["b"+str(i+1)]**2)
+#    regcost = lam/(2*m)*regcost
     ### END CODE HERE ###
     
-    cost += regcost
+#    cost += regcost
     
     cost = np.squeeze(cost)     # makes sure cost is the dimension we expect. 
 
@@ -177,14 +177,14 @@ def update_parameters(parameters, grads, learning_rate):
     parameters -- python dictionary containing your updated parameters 
     """
     
-    lam = 0
+    #lam = 0
     # Calculate number of layers in NN
     num_layers= len(parameters)//2 + 1
     
     # Update W and b for each layer using gradients calculated
     for i in range(num_layers - 1):
         parameters["W" + str(i+1)] = parameters["W" + str(i+1)] \
-        - learning_rate*(grads["dW"+str(i+1)] + lam*parameters["W" + str(i+1)])
+        - learning_rate*(grads["dW"+str(i+1)])
         parameters["b" + str(i+1)] = parameters["b" + str(i+1)] \
         - learning_rate*grads["db"+str(i+1)]
     
