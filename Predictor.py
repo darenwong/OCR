@@ -1,4 +1,9 @@
-def predictor(filepath):
+from ProcessImages import *
+from nnlib import *
+import matplotlib.pyplot as plt
+
+
+def predictor(filepath, parameters):
     """
     Parameters
     ----------
@@ -9,11 +14,12 @@ def predictor(filepath):
     -------
     int
         An integer that indicates the ML prediction
-    
-    plot
-        Resize image and plot the image
     """
-    (width, height), greyscale_map = image2pixelarray(filepath)
-    image_display(filepath)
-    prediction = predict(parameters, greyscale_map)
-    return print("I think it's a {}!".format(prediction))
+    img = preprocess_image(filepath)
+    plt.imshow(img/255, cmap='gray')
+    plt.colorbar()
+    plt.show()
+    prediction = predict(parameters, img.reshape((784,1))/255)
+    print("It's {}!".format(prediction))
+    return prediction
+

@@ -1,45 +1,18 @@
-# Neural network
 import numpy as np
-from nnlib import *
-import scipy.io
-import Predictor
-import ProcessImages
+from keras.datasets import mnist
+from keras.utils import np_utils
 
-# Data Preprocessing
-train_percent = 0.7
+# fix random seed for reproducibility
+seed = 7
+np.random.seed(seed)
 
-file = scipy.io.loadmat('ex4data1.mat')
-raw_X = file['X'].T
-raw_Y = file['y']
-# Convert 10 in data to 0
-raw_Y[(raw_Y == 10)] = 0
-
-# Randomize Dataset
-combined = np.concatenate((raw_X,raw_Y.T)).T
-np.random.shuffle(combined)
-combined = combined.T
-
-new_X = combined[:-1,:]
-new_Y = combined[-1,:]
-
-# Separate out Y for Multi-component Classification
-Y_process = np.zeros((new_Y.shape[0],10))
-
-for i in range(10):
-    idx = np.where(new_Y==i)[0]
-    Y_process[idx,[i]] = 1
-
-train_len = int(new_X.shape[1]*train_percent)
-X_train = new_X[:,:train_len]
-Y_train = Y_process[:train_len,:].T
-
-X_test = new_X[:,train_len:]
-Y_test = new_Y[train_len:].T
+# load data
+(X_train, y_train), (X_test, y_test) = mnist.load_data()
 
 # Initial variables for Neural Network
-hid_layers = [5]
+hid_layers = [25, 25]
 num_iter = 10000
-learn_rate = 1.2
+learn_rate = 1.1
 
 # Initialize Neural Network
 #parameters = nn_model(X_train, Y_train, hid_layers, num_iter, learn_rate, True)
@@ -55,8 +28,14 @@ print_cost -- if True, print the cost every 1000 iterations
 Returns:
 parameters -- parameters learnt by the model. They can then be used to predict.
 """
-X = X_train
-Y = Y_train
+num_pixels = X_train.shape[1] * X_train.shape[2]
+X = X_train.reshape(X_train.shape[0], num_pixels).astype('float32').T/255
+#X = X[:, :100]
+X_test = X_test.reshape(X_test.shape[0], num_pixels).astype('float32').T/255
+Y = np_utils.to_categorical(y_train, 10).T
+#Y = Y[: , :100]
+Y_test = np_utils.to_categorical(y_test, 10).T
+
 n_h = hid_layers
 num_iterations = num_iter
 learning_rate = learn_rate
@@ -64,6 +43,8 @@ print_cost = True
 
 n_x = X.shape[0]
 n_y = Y.shape[0]
+
+
 
 # Initialize parameters
 parameters = initialize_parameters(n_x, n_h, n_y)    
@@ -92,10 +73,10 @@ for i in range(0, num_iterations):
 
 # Using trained NN, find predicted y data
 predictions = predict(parameters, X_test)
+A_fin, cache = forward_propagation(X_test, parameters)
+cost = compute_cost(A_fin, Y_test, parameters)
+accuracy = np.sum((y_test == predictions))/y_test.shape[0]
 
-accuracy = np.sum((Y_test == predictions))/Y_test.shape[0]
-
-print('\n Accuracy is : ')
-print(accuracy)
+print('\n Accuracy is : {}'.format(accuracy))
+print('\n Cost of test set is : {}'.format(cost))
 #print ('Accuracy: %d' %np.sum((Y_test == predictions))/Y_test.shape[0] + '%')
-

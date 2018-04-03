@@ -46,28 +46,28 @@ def forward_propagation(X, parameters):
     """
     # Determine number of layers in NN
     num_layers= len(parameters)//2 + 1
-    tempA = [X]
     cache = {}
-    
+    A = X
+    #print(len(tempA))
     # For each layer excluding the final layer, forward propagate the data
     for i in range(num_layers - 2):
         W = parameters["W" + str(i+1)]
         b = parameters["b" + str(i+1)]
-        Z = np.matmul(W,tempA[i]) + b
+        Z = np.matmul(W , A) + b
         A = np.tanh(Z)
+        #print(len(tempA))
         cache["Z" + str(i+1)] = Z
-        tempA.append(A)
         cache["A" + str(i+1)] = A
         
     # Forward propagate to the final layer using sigmoid function
     W = parameters["W" + str(num_layers-1)]
     b = parameters["b" + str(num_layers-1)]
-    Z = np.matmul(W,tempA[num_layers-2]) + b
+    Z = np.matmul(W , A) + b
+    #print(Z.shape)
     A_fin = sigmoid(Z)
     cache["Z" + str(num_layers-1)] = Z
-    tempA.append(A_fin)
     cache["A" + str(num_layers-1)] = A_fin
-
+    #print(len(tempA))
     return A_fin, cache
   
 
